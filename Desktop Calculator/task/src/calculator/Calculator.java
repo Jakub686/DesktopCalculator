@@ -1,89 +1,67 @@
 package calculator;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 
-public class Calculator extends JFrame implements ActionListener {
-    // JTextField
-    static JTextField t;
+public class Calculator extends JFrame {
 
-    // JFrame
-    static JFrame f;
+    private static String input="";
 
-    // JButton
-    static JButton b;
-
-    // label to display text
-    //static JLabel l;
-
-    // default constructor
     public Calculator() {
-    }
-    public void run(){
-        // create a new frame to store text field and button
-        f = new JFrame("EquationTextField");
-
-        // create a label to display text
-        //l = new JLabel("nothing entered");
-
-        // create a new button
-        b = new JButton("Solve");
-
-        // create a object of the text class
-        Calculator te = new Calculator();
-
-        // addActionListener to button
-        b.addActionListener(te);
-
-        // create a object of JTextField with 16 columns and a given initial text
-        t = new JTextField( 16);
-
-        // create a panel to add buttons and textfield
-        JPanel p = new JPanel();
-
-        // add buttons and textfield to panel
-        p.add(t);
-        p.add(b);
-        //p.add(l);
-
-        // add panel to frame
-        f.add(p);
-
-        // set the size of frame
-        f.setSize(600, 600);
-        f.show();
-
+        super("Calculator");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(320, 400);
+        initComp();
+        setLayout(null);
+        setLocationRelativeTo(null);
+        setVisible(true);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        String s = e.getActionCommand();
-        if (s.equals("Solve")) {
+    public void initComp() {
+        JTextField equationTextField = new JTextField();
+        equationTextField.setName("EquationTextField");
+        equationTextField.setBounds(40, 20, 230, 40);
+        add(equationTextField);
 
-            String input = t.getText();
-            // set the text of field to blank
-            try {
-                t.setText(t.getText()+ "="+mathEvaluation(input));
-            } catch (ScriptException scriptException) {
-                scriptException.printStackTrace();
-            }
-        }
+        JButton solveButton = new JButton("=");
+        solveButton.setName("=");
+        solveButton.setBounds(100, 200, 100, 40);
+        add(solveButton);
+
+        JButton sevenButton = new JButton("7");
+        sevenButton.setName("7");
+        sevenButton.setBounds(40, 80, 50, 40);
+        add(sevenButton);
+
+        JButton eightButton = new JButton("8");
+        eightButton.setName("8");
+        eightButton.setBounds(100, 80, 50, 40);
+        add(eightButton);
+
+        JButton nineButton = new JButton("9");
+        nineButton.setName("9");
+        nineButton.setBounds(160, 80, 50, 40);
+        add(nineButton);
+
+        JButton divisionButton = new JButton("/");
+        divisionButton.setName("/");
+        divisionButton.setBounds(220, 80, 50, 40);
+        add(divisionButton);
+
+        sevenButton.addActionListener(e -> {
+            equationTextField.setText("7"+input);
+            input = equationTextField.getText();
+        });
+
+        eightButton.addActionListener(e -> {
+            equationTextField.setText("8"+input);
+            input = equationTextField.getText();
+        });
+
+        solveButton.addActionListener(e -> {
+            String[] args = equationTextField.getText().split("\\+");
+            int a = Integer.parseInt(args[0]);
+            int b = Integer.parseInt(args[1]);
+            equationTextField.setText(equationTextField.getText() + "=" + (a + b));
+        });
     }
-
-    public String mathEvaluation(String input) throws ScriptException, NullPointerException {
-        String[]  inputArray = input.split("\\+");
-        int operant1 = Integer.parseInt(inputArray[0]);
-        int operant2 = Integer.parseInt(inputArray[1]);
-
-        String result = Integer.toString((operant1) + (operant2));
-        return result;
-    }
-
 }

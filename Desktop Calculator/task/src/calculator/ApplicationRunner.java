@@ -1,11 +1,9 @@
 package calculator;
 
-import javax.script.ScriptException;
+import javax.swing.*;
 
 public class ApplicationRunner {
-    public static void main(String[] args) throws ScriptException {
-        Calculator calculator = new Calculator();
-        calculator.run();
-
+    public static void main(String[] args) {
+        new Calculator();
     }
 }
