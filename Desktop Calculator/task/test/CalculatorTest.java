@@ -1,6 +1,6 @@
 import calculator.Calculator;
 import org.assertj.swing.fixture.JButtonFixture;
-import org.assertj.swing.fixture.JTextComponentFixture;
+import org.assertj.swing.fixture.JLabelFixture;
 import org.hyperskill.hstest.dynamic.DynamicTest;
 import org.hyperskill.hstest.exception.outcomes.WrongAnswer;
 import org.hyperskill.hstest.stage.SwingTest;
@@ -13,6 +13,7 @@ import static java.util.Map.entry;
 import static org.hyperskill.hstest.testcase.CheckResult.correct;
 
 public class CalculatorTest extends SwingTest {
+
     private Map<Character, JButtonFixture> charToButtonMap;
 
     @SwingComponent(name = "Equals")
@@ -45,45 +46,85 @@ public class CalculatorTest extends SwingTest {
     private JButtonFixture mEight;
     @SwingComponent(name = "Nine")
     private JButtonFixture mNine;
+    @SwingComponent(name = "Dot")
+    private JButtonFixture mDot;
+    @SwingComponent(name = "Clear")
+    private JButtonFixture mClear;
+    @SwingComponent(name = "Delete")
+    private JButtonFixture mDel;
 
-    @SwingComponent(name = "EquationTextField")
-    private JTextComponentFixture mEquation;
+    @SwingComponent(name = "EquationLabel")
+    private JLabelFixture mEquationLabel;
+    @SwingComponent(name = "ResultLabel")
+    private JLabelFixture mResultLabel;
 
+    private final String divideSymbol = "\u00F7";
+    private final String multiplySymbol = "\u00D7";
+    private final String addSymbol = "\u002B";
+    private final String subtractSymbol = "-";
 
     public CalculatorTest() {
 
         super(new Calculator());
     }
 
-    private void typeText(String text, String expectedResult) {
-        JButtonFixture button = null;
+    private void typeText (String text, String expectedResult, boolean checkResult) {
+
         for (int i = 0; i < text.length(); i++) {
-            button = charToButtonMap.get(text.charAt(i));
+            JButtonFixture button = charToButtonMap.get(text.charAt(i));
             button.click();
         }
         try {
-            if (!mEquation.text().trim().equals(expectedResult)) {
-                assert button != null;
-                if (!button.text().matches("\\d")) {
-                    throw new WrongAnswer("EquationTextField contains wrong operator.\n" +
-                        "    Your output: " + mEquation.text().trim() + "\n" +
-                        "Expected output: " + expectedResult);
-                } else {
-                    throw new WrongAnswer("EquationTextField contains wrong number.\n" +
-                        "    Your output: " + mEquation.text().trim() + "\n" +
+            if (checkResult) {
+                if (!mResultLabel.text().trim().equals(expectedResult)) {
+                    throw new WrongAnswer("Result Label contains wrong number.\n" +
+                        "    Your output: " + mResultLabel.text().trim() +
+                        "\nExpected output: " + expectedResult);
+                }
+            } else {
+                if (!mEquationLabel.text().trim().equals(expectedResult)) {
+                    throw new WrongAnswer("Equation Label contains wrong number.\n" +
+                        "    Your output: " + mEquationLabel.text()
+                        .trim() + "\n" +
                         "Expected output: " + expectedResult);
                 }
-
             }
         } catch (NullPointerException e) {
-            throw new WrongAnswer("EquationTextField is empty.");
+            throw new WrongAnswer("Either Equation Label or Result Label is empty.");
         }
 
-        mEquation.setText("");
+        mClear.click();
+    }
+
+    private void typeText (String text, String expectedResult, boolean checkResult,
+                           String feedBack) {
+
+        for (int i = 0; i < text.length(); i++) {
+            JButtonFixture button = charToButtonMap.get(text.charAt(i));
+            button.click();
+        }
+        try {
+            if (checkResult) {
+                if (!mResultLabel.text().trim().equals(expectedResult)) {
+                    throw new WrongAnswer(feedBack + "\n" + "Your output: " + mResultLabel.text() +
+                            "\nExpected output: " + expectedResult);
+                }
+            } else {
+                if (!mEquationLabel.text().trim().equals(expectedResult)) {
+                    throw new WrongAnswer(feedBack + "\n" + "Your output: " + mEquationLabel.text() +
+                            "\nExpected output: " + expectedResult);
+                }
+            }
+        } catch (NullPointerException e) {
+            throw new WrongAnswer("Either Equation Label or Result Label is empty.");
+        }
+
+        mClear.click();
     }
 
     @DynamicTest
     CheckResult test1 () {
+
         charToButtonMap = Map.ofEntries(
             entry('0', mZero),
             entry('1', mOne),
@@ -99,81 +140,88 @@ public class CalculatorTest extends SwingTest {
             entry('-', mSub),
             entry('*', mMult),
             entry('/', mDiv),
-            entry('=', mEqual)
+            entry('=', mEqual),
+            entry('.', mDot),
+            entry('<', mDel),
+            entry('C', mClear)
+
         );
 
         requireEnabled(mEqual, mAdd, mSub, mDiv, mMult, mOne, mTwo, mThree, mFour, mFive, mSix,
-            mSeven, mEight, mNine, mZero);
+            mSeven, mEight, mNine, mZero, mDot, mClear, mDel, mEquationLabel,
+            mResultLabel);
 
         requireVisible(mEqual, mAdd, mSub, mDiv, mMult, mOne, mTwo, mThree, mFour, mFive, mSix,
-            mSeven, mEight, mNine, mZero);
+            mSeven, mEight, mNine, mZero, mDot, mClear, mDel, mEquationLabel,
+            mResultLabel);
+
+        return correct();
+    }
+
+    @DynamicTest()
+    CheckResult test2 () {
+
+        typeText("1", "1", false);
+        typeText("1<", "", false,
+            "Clicking on the Delete Button should delete the last character from the EquationLabel");
+        typeText("111C", "", false,
+            "Clicking on the Clear Button should delete all the characters from the EquationLabel");
 
         return correct();
     }
 
     // Pushing buttons
     @DynamicTest()
-    CheckResult test2 () {
+    CheckResult test3 () {
 
-        typeText("1", "1");
-        typeText("2", "2");
-        typeText("3", "3");
-        typeText("4", "4");
-        typeText("5", "5");
-        typeText("6", "6");
-        typeText("7", "7");
-        typeText("8", "8");
-        typeText("9", "9");
-        typeText("0", "0");
-        typeText("+", "+");
-        typeText("-", "-");
-        typeText("*", "x");
-        typeText("/", "/");
+        typeText("1", "1", false);
+        typeText("2", "2", false);
+        typeText("3", "3", false);
+        typeText("4", "4", false);
+        typeText("5", "5", false);
+        typeText("6", "6", false);
+        typeText("7", "7", false);
+        typeText("8", "8", false);
+        typeText("9", "9", false);
+        typeText("0", "0", false);
+        typeText("+", "+", false);
+        typeText("-", "-", false);
+        typeText("*", multiplySymbol, false);
+        typeText("/", divideSymbol, false);
+        typeText(".", ".", false);
 
         return correct();
     }
 
     //Testing calculations
     @DynamicTest()
-    CheckResult test3 () {
-
-        //Add operation
-        typeText("1+1=", "1+1=2");
-        typeText("9+1=", "9+1=10");
-        typeText("9999+1=", "9999+1=10000");
-        typeText("599+699=", "599+699=1298");
-
-
-        return correct();
-    }
-
-    @DynamicTest()
     CheckResult test4 () {
-        //Subtract operations
-        typeText("1-1=", "1-1=0");
-        typeText("99-1=", "99-1=98");
-        typeText("12-7=", "12-7=5");
+        typeText("9+1=", "10", true);
+        typeText("1-99=", "-98", true);
+        typeText("9/2=", "4.5", true);
+        typeText("0/7=", "0", true);
+        typeText("4.5*2=", "9", true);
 
         return correct();
     }
 
+    //Test operator precedence
     @DynamicTest()
     CheckResult test5 () {
-        //Multiply operations
-        typeText("1*1=", "1x1=1");
-        typeText("99*3=", "99x3=297");
-        typeText("12*0=", "12x0=0");
-        typeText("243*13=", "243x13=3159");
+        //Add & Subtract
+        typeText("11-5+4=", "10", true);
+        typeText("2-17+5=", "-10", true);
 
-        return correct();
-    }
 
-    @DynamicTest()
-    CheckResult test6 () {
-        //Divide operations
-        typeText("1/1=", "1/1=1");
-        typeText("9/3=", "9/3=3");
-        typeText("81/9=", "81/9=9");
+        //Multiply & Divide
+        typeText("9/2*8=", "36", true);
+
+        //Combined
+        typeText("2+3-5*6=", "-25", true);
+        typeText("16+9-7/5=", "23.6", true);
+        typeText("25+9/3-8*8=", "-36", true);
+        typeText("3.8*7.5/2.5*5=", "57", true);
+        typeText("9.2/2.3*12/2.4=", "20", true);
 
         return correct();
     }
