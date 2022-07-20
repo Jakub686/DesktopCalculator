@@ -51,6 +51,7 @@ public class Calculator extends JFrame {
         button.setBounds(x, y, width, height);
         add(button);
 
+
         if ("=".equals(text)) {
             button.addActionListener(e -> {
                 Pattern pattern = Pattern.compile("^(\\d+)(\\+|\\-|x|\\/)(\\d+)$");
